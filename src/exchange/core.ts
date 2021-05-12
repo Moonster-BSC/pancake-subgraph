@@ -1,15 +1,7 @@
 /* eslint-disable prefer-const */
 import { BigInt, BigDecimal } from "@graphprotocol/graph-ts";
-import {
-  Pair,
-  Token,
-  PancakeFactory,
-  Transaction,
-  Burn as BurnEvent,
-  Swap as SwapEvent,
-  Bundle,
-} from "../../generated/schema";
-import { Mint, Burn, Swap, Sync } from "../../generated/templates/Pair/Pair";
+import { Pair, Token, PancakeFactory, Bundle } from "../../generated/schema";
+import { Swap, Sync } from "../../generated/templates/Pair/Pair";
 import { updatePairDayData, updateTokenDayData, updatePancakeDayData, updatePairHourData } from "./dayUpdates";
 import { getBnbPriceInUSD, findBnbPerToken, getTrackedVolumeUSD, getTrackedLiquidityUSD } from "./pricing";
 import { convertTokenToDecimal, FACTORY_ADDRESS, ONE_BI, ZERO_BD } from "./utils";
@@ -22,10 +14,6 @@ export function handleSync(event: Sync): void {
 
   // reset factory liquidity by subtracting only tracked liquidity
   pancake.totalLiquidityBNB = pancake.totalLiquidityBNB.minus(pair.trackedReserveBNB as BigDecimal);
-
-  // reset token total liquidity amounts
-  token0.totalLiquidity = token0.totalLiquidity.minus(pair.reserve0);
-  token1.totalLiquidity = token1.totalLiquidity.minus(pair.reserve1);
 
   pair.reserve0 = convertTokenToDecimal(event.params.reserve0, token0.decimals);
   pair.reserve1 = convertTokenToDecimal(event.params.reserve1, token1.decimals);
@@ -73,10 +61,6 @@ export function handleSync(event: Sync): void {
   // use tracked amounts globally
   pancake.totalLiquidityBNB = pancake.totalLiquidityBNB.plus(trackedLiquidityBNB);
   pancake.totalLiquidityUSD = pancake.totalLiquidityBNB.times(bundle.bnbPrice);
-
-  // now correctly set liquidity amounts for each token
-  token0.totalLiquidity = token0.totalLiquidity.plus(pair.reserve0);
-  token1.totalLiquidity = token1.totalLiquidity.plus(pair.reserve1);
 
   // save entities
   pair.save();
@@ -134,16 +118,11 @@ export function handleSwap(event: Swap): void {
   token1.tradeVolumeUSD = token1.tradeVolumeUSD.plus(trackedAmountUSD);
   token1.untrackedVolumeUSD = token1.untrackedVolumeUSD.plus(derivedAmountUSD);
 
-  // update txn counts
-  token0.totalTransactions = token0.totalTransactions.plus(ONE_BI);
-  token1.totalTransactions = token1.totalTransactions.plus(ONE_BI);
-
   // update pair volume data, use tracked amount if we have it as its probably more accurate
   pair.volumeUSD = pair.volumeUSD.plus(trackedAmountUSD);
   pair.volumeToken0 = pair.volumeToken0.plus(amount0Total);
   pair.volumeToken1 = pair.volumeToken1.plus(amount1Total);
   pair.untrackedVolumeUSD = pair.untrackedVolumeUSD.plus(derivedAmountUSD);
-  pair.totalTransactions = pair.totalTransactions.plus(ONE_BI);
   pair.save();
 
   // update global values, only used tracked amounts for volume
@@ -158,42 +137,6 @@ export function handleSwap(event: Swap): void {
   token0.save();
   token1.save();
   pancake.save();
-
-  let transaction = Transaction.load(event.transaction.hash.toHex());
-  if (transaction === null) {
-    transaction = new Transaction(event.transaction.hash.toHex());
-    transaction.block = event.block.number;
-    transaction.timestamp = event.block.timestamp;
-    transaction.swaps = [];
-    transaction.burns = [];
-  }
-  let swaps = transaction.swaps;
-  let swap = new SwapEvent(event.transaction.hash.toHex().concat("-").concat(BigInt.fromI32(swaps.length).toString()));
-
-  // update swap event
-  swap.transaction = transaction.id;
-  swap.pair = pair.id;
-  swap.timestamp = transaction.timestamp;
-  swap.transaction = transaction.id;
-  swap.sender = event.params.sender;
-  swap.amount0In = amount0In;
-  swap.amount1In = amount1In;
-  swap.amount0Out = amount0Out;
-  swap.amount1Out = amount1Out;
-  swap.to = event.params.to;
-  swap.from = event.transaction.from;
-  swap.logIndex = event.logIndex;
-  // use the tracked amount if we have it
-  swap.amountUSD = trackedAmountUSD === ZERO_BD ? derivedAmountUSD : trackedAmountUSD;
-  swap.save();
-
-  // update the transaction
-
-  // TODO: Consider using .concat() for handling array updates to protect
-  // against unintended side effects for other code paths.
-  swaps.push(swap.id);
-  transaction.swaps = swaps;
-  transaction.save();
 
   // update day entities
   let pairDayData = updatePairDayData(event);

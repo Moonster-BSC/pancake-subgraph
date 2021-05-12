@@ -41,18 +41,11 @@ type Token @entity {
   tradeVolumeUSD: BigDecimal!
   untrackedVolumeUSD: BigDecimal!
 
-  # transactions across all pairs
-  totalTransactions: BigInt!
-
-  # liquidity across all pairs
-  totalLiquidity: BigDecimal!
-
   # derived prices
   derivedBNB: BigDecimal
   derivedUSD: BigDecimal
 
   # derived fields
-  tokenDayData: [TokenDayData!]! @derivedFrom(field: "token")
   pairDayDataBase: [PairDayData!]! @derivedFrom(field: "token0")
   pairDayDataQuote: [PairDayData!]! @derivedFrom(field: "token1")
   pairBase: [Pair!]! @derivedFrom(field: "token0")
