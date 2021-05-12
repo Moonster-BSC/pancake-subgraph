@@ -46,8 +46,6 @@ export function handlePairCreated(event: PairCreated): void {
     token0.tradeVolume = ZERO_BD;
     token0.tradeVolumeUSD = ZERO_BD;
     token0.untrackedVolumeUSD = ZERO_BD;
-    token0.totalLiquidity = ZERO_BD;
-    token0.totalTransactions = ZERO_BI;
     token0.save();
   }
 
@@ -66,8 +64,6 @@ export function handlePairCreated(event: PairCreated): void {
     token1.tradeVolume = ZERO_BD;
     token1.tradeVolumeUSD = ZERO_BD;
     token1.untrackedVolumeUSD = ZERO_BD;
-    token1.totalLiquidity = ZERO_BD;
-    token1.totalTransactions = ZERO_BI;
     token1.save();
   }
 
@@ -75,7 +71,6 @@ export function handlePairCreated(event: PairCreated): void {
   pair.token0 = token0.id;
   pair.token1 = token1.id;
   pair.name = token0.symbol.concat("-").concat(token1.symbol);
-  pair.totalTransactions = ZERO_BI;
   pair.reserve0 = ZERO_BD;
   pair.reserve1 = ZERO_BD;
   pair.trackedReserveBNB = ZERO_BD;
