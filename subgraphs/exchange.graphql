@@ -84,59 +84,9 @@ type Pair @entity {
   volumeToken1: BigDecimal!
   volumeUSD: BigDecimal!
   untrackedVolumeUSD: BigDecimal!
-  totalTransactions: BigInt!
 
   block: BigInt!
   timestamp: BigInt!
-
-  # derived fields
-  swaps: [Swap!]! @derivedFrom(field: "pair")
-}
-
-type Transaction @entity {
-  id: ID!
-
-  block: BigInt!
-  timestamp: BigInt!
-  swaps: [Swap]!
-}
-
-type Swap @entity {
-  # transaction hash + "-" + index in swaps Transaction array
-  id: ID!
-  transaction: Transaction!
-  timestamp: BigInt! # need this to pull recent txns for specific token or pair
-  pair: Pair!
-
-  # populated from the Swap event
-  sender: Bytes!
-  from: Bytes! # the EOA that initiated the txn
-  amount0In: BigDecimal!
-  amount1In: BigDecimal!
-  amount0Out: BigDecimal!
-  amount1Out: BigDecimal!
-  to: Bytes!
-  logIndex: BigInt
-
-  # derived info
-  amountUSD: BigDecimal!
-}
-
-type PancakeDayData @entity {
-  id: ID! # timestamp rounded to current day by dividing by 86400
-
-  date: Int!
-
-  dailyVolumeBNB: BigDecimal!
-  dailyVolumeUSD: BigDecimal!
-  dailyVolumeUntracked: BigDecimal!
-
-  totalVolumeBNB: BigDecimal!
-  totalLiquidityBNB: BigDecimal!
-  totalVolumeUSD: BigDecimal! # Accumulate at each trade, not just calculated off whatever totalVolume is. making it more accurate as it is a live conversion
-  totalLiquidityUSD: BigDecimal!
-
-  totalTransactions: BigInt!
 }
 
 type PairDayData @entity {
@@ -162,25 +112,4 @@ type PairDayData @entity {
   dailyVolumeToken1: BigDecimal!
   dailyVolumeUSD: BigDecimal!
   dailyTxns: BigInt!
-}
-
-type TokenDayData @entity {
-  id: ID!
-
-  date: Int!
-  token: Token!
-
-  # volume stats
-  dailyVolumeToken: BigDecimal!
-  dailyVolumeBNB: BigDecimal!
-  dailyVolumeUSD: BigDecimal!
-  dailyTxns: BigInt!
-
-  # liquidity stats
-  totalLiquidityToken: BigDecimal!
-  totalLiquidityBNB: BigDecimal!
-  totalLiquidityUSD: BigDecimal!
-
-  # price stats
-  priceUSD: BigDecimal!
 }
