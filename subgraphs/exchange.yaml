@@ -51,7 +51,6 @@ templates:
         - name: Pair
           file: ../abis/Pair.json
       eventHandlers:
-        
         - event: Swap(indexed address,uint256,uint256,uint256,uint256,indexed address)
           handler: handleSwap
         - event: Sync(uint112,uint112)
