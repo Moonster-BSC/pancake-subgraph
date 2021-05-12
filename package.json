@@ -8,7 +8,7 @@
   "scripts": {
     "codegen:exchange": "graph codegen subgraphs/exchange.yaml",
     "build:exchange": "graph build subgraphs/exchange.yaml",
-    "deploy:exchange": "graph deploy --node https://api.thegraph.com/deploy/ --ipfs https://api.thegraph.com/ipfs/ moonster-bsc/exchange subgraphs/exchange.yaml",
+    "deploy:exchange": "graph deploy --node https://api.thegraph.com/deploy/ --ipfs https://api.thegraph.com/ipfs/ moonster-bsc/pancake-pair subgraphs/exchange.yaml",
     "format:check": "prettier --check */**/*.{js,ts}",
     "format:write": "prettier --write */**/*.{js,ts}",
     "lint": "eslint */**/*.{js,ts}"
